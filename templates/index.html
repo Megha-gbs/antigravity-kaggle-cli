@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="shortcut icon" href="https://www.gstatic.com/images/branding/product/1x/bigquery_64dp.png" type="image/png">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="brand">
+                    <img src="https://www.gstatic.com/images/branding/product/1x/bigquery_64dp.png" alt="BigQuery Logo" class="brand-logo">
+                    <div class="brand-text">
+                        <h1>BigQuery Release Notes</h1>
+                        <p class="tagline">Explore latest updates and share them instantly</p>
+                    </div>
+                </div>
+                <div class="actions">
+                    <button id="refresh-btn" class="btn btn-primary" title="Refresh release notes">
+                        <svg class="icon icon-sync" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l.73-.73" />
+                        </svg>
+                        <span>Refresh Feed</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Body -->
+        <main class="app-main">
+            <!-- Filter section -->
+            <section class="controls-section">
+                <div class="search-box">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                    <input type="text" id="search-input" placeholder="Search updates by keyword (e.g. Gemini, SQL, console)...">
+                </div>
+                <div class="filter-tabs" id="type-filters">
+                    <button class="filter-tab active" data-type="all">All Updates</button>
+                    <button class="filter-tab" data-type="Feature">Features</button>
+                    <button class="filter-tab" data-type="Issue">Issues</button>
+                    <button class="filter-tab" data-type="Change">Changes</button>
+                    <button class="filter-tab" data-type="Announcement">Announcements</button>
+                    <button class="filter-tab" data-type="Deprecation">Deprecations</button>
+                </div>
+            </section>
+
+            <!-- Loading Spinner / skeleton -->
+            <section id="loading-state" class="state-container hidden">
+                <div class="spinner-container">
+                    <div class="double-bounce1"></div>
+                    <div class="double-bounce2"></div>
+                </div>
+                <p>Fetching latest release notes from Google Cloud...</p>
+            </section>
+
+            <!-- Error State -->
+            <section id="error-state" class="state-container hidden">
+                <div class="error-card">
+                    <svg class="error-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                    <h3>Failed to load release notes</h3>
+                    <p id="error-message">Unknown error occurred</p>
+                    <button id="retry-btn" class="btn btn-secondary">Retry Fetch</button>
+                </div>
+            </section>
+
+            <!-- Content Area -->
+            <section id="content-area" class="feed-container">
+                <!-- Grouped by date entries will be inserted here -->
+            </section>
+        </main>
+    </div>
+
+    <!-- Floating Tweet Composer Dock -->
+    <div id="tweet-dock" class="tweet-dock hidden">
+        <div class="dock-content">
+            <div class="dock-header">
+                <div class="dock-title">
+                    <svg class="twitter-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                    </svg>
+                    <span>Prepare Tweet Update</span>
+                </div>
+                <button id="close-dock-btn" class="btn-close" aria-label="Close composer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="dock-body">
+                <textarea id="tweet-textarea" rows="4" placeholder="Edit your tweet text..."></textarea>
+                <div class="dock-footer">
+                    <div class="char-counter">
+                        <span id="char-count">0</span>/280 characters
+                    </div>
+                    <div class="dock-actions">
+                        <button id="cancel-selection-btn" class="btn btn-tertiary">Deselect</button>
+                        <button id="send-tweet-btn" class="btn btn-x">
+                            <svg class="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                            </svg>
+                            Post to X
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Import -->
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
